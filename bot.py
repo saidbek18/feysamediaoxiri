@@ -1,10 +1,14 @@
 import logging
 import asyncio
-import sqlite3
 import random
 import re
 import warnings
-import sqlite3 
+import os
+import threading
+import sqlite3
+from fastapi import FastAPI
+import uvicorn
+
 warnings.filterwarnings("ignore")
 
 from telegram.ext import (
@@ -15,11 +19,21 @@ from telegram.ext import (
     filters,
     ContextTypes,
 )
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime
-from telegram import (
-    Update, InlineKeyboardButton, InlineKeyboardMarkup
-)
 
+# ================= FASTAPI =================
+web_app = FastAPI()
+
+@web_app.get("/")
+def home():
+    return {"status": "bot ishlayapti"}
+
+# ================= WEB SERVER =================
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(web_app, host="0.0.0.0", port=port)
+    
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -1311,6 +1325,9 @@ async def on_startup(app: Application):
 
 def main():
     init_db()
+
+    # 🔥 PORT OCHISH (MUHIM)
+    threading.Thread(target=run_web).start()
 
     app = Application.builder().token(BOT_TOKEN).post_init(on_startup).build()
 
